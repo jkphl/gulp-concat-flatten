@@ -1,0 +1,41 @@
+{
+  "name": "gulp-concat-flatten",
+  "description": "Recursively concatenates files based on the directory structure",
+  "version": "0.1.0",
+  "repository": "jkphl/gulp-concat-flatten",
+  "author": "Joschi Kuphal <joschi@kuphal.net> (https://jkphl.is)",
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "gulpplugin",
+    "css",
+    "javascript"
+  ],
+  "dependencies": {
+    "concat-with-sourcemaps": "^1.0.4",
+    "through2": "^2.0.3",
+    "vinyl": "^2.0.1"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-jshint": "^2.0.4",
+    "gulp-sourcemaps": "^2.2.0",
+    "istanbul": "^0.4.5",
+    "jshint": "^2.9.4",
+    "mocha": "^3.2.0",
+    "mocha-lcov-reporter": "^1.2.0",
+    "should": "^11.1.1",
+    "stream-array": "^1.1.2",
+    "stream-assert": "^2.0.3"
+  },
+  "scripts": {
+    "test1": "gulp && istanbul test _mocha --report html -- test/*.js --reporter spec",
+    "test": "istanbul test _mocha --report html -- test/*.js --reporter spec",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+  },
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "license": "MIT"
+}
