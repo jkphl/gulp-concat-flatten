@@ -98,6 +98,6 @@ Copyright © 2016 Joschi Kuphal <joschi@kuphal.net> / [@jkphl](https://twitter.c
 [coveralls-image]: https://img.shields.io/coveralls/jkphl/gulp-concat-flatten.svg
 
 [depstat-url]: https://david-dm.org/jkphl/gulp-concat-flatten
-[depstat-image]: https://david-dm.org/jkphl/gulp-concat-flatten.svg
-[devdepstat-url]: https://david-dm.org/jkphl/gulp-concat-flatten#info=devDependencies
+[depstat-image]: https://david-dm.org/jkphl/gulp-concat-flatten/status.svg
+[devdepstat-url]: https://david-dm.org/jkphl/gulp-concat-flatten?type=dev
 [devdepstat-image]: https://david-dm.org/jkphl/gulp-concat-flatten/dev-status.svg
