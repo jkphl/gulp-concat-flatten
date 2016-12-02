@@ -2,116 +2,138 @@
 
 var through = require('through2');
 var path = require('path');
+var fs = require('fs');
 var File = require('vinyl');
 var Concat = require('concat-with-sourcemaps');
+var cloneStats = require('clone-stats');
 
-// file can be a vinyl file object or a string
-// when a string it will construct a new one
-module.exports = function (file, opt) {
-	if (!file) {
-		throw new Error('gulp-concat-flatten: Missing file option');
-	}
-	opt = opt || {};
+/**
+ * Concatenation by directory structure
+ *
+ * The method will concatenate files based on their position in the file system. It does only process files that are
+ * stored in or below the given base directory (positions beyond will be ignored). Files directly stored in the base
+ * directory will just be copied to the destination. Files in subdirectories will be concatenated to resources named
+ * after the first-level subdirectory (with an optional file extension).
+ *
+ * @param {String} base Base directory
+ * @param {String} ext File extension
+ * @param {Object} opt Options
+ * @returns {*}
+ */
+module.exports = function (base, ext, opt) {
 
-	// to preserve existing |undefined| behaviour and to introduce |newLine: ""| for binaries
-	if (typeof opt.newLine !== 'string') {
-		opt.newLine = '\n';
-	}
+    // Error if the base directory is missing
+    if (!base) {
+        throw new Error('gulp-concat-flatten: Missing base directory');
+    }
 
-	var isUsingSourceMaps = false;
-	var latestFile;
-	var latestMod;
-	var extName;
-	var concat;
-	var concats = [];
+    // Error if the base directory isn't a string
+    if (typeof base !== 'string') {
+        throw new Error('gulp-concat-flatten: Base directory must be a directory path');
+    }
 
-	if (typeof file === 'string') {
-		extName = file;
-	} else if (typeof file.path === 'string') {
-		extName = path.basename(file.path);
-	} else {
-		throw new Error('gulp-concat-flatten: Missing path in file options');
-	}
+    // Error if the base directory doesn't exist
+    base = path.resolve(base);
+    try {
+        if (!fs.statSync(base).isDirectory()) {
+            throw 'error';
+        }
+    } catch (e) {
+        throw new Error('gulp-concat-flatten: Base directory doesn\'t exist');
+    }
 
-	function bufferContents(file, enc, cb) {
+    ext = ('' + (ext || '')).trim();
+    if (ext.length && (ext.substr(0, 1) !== '.')) {
+        ext = '.' + ext;
+    }
+    opt = opt || {};
 
-		// ignore empty files
-		if (file.isNull()) {
-			cb();
-			return;
-		}
+    // to preserve existing |undefined| behaviour and to introduce |newLine: ""| for binaries
+    if (typeof opt.newLine !== 'string') {
+        opt.newLine = '\n';
+    }
 
-		// we don't do streams (yet)
-		if (file.isStream()) {
-			this.emit('error', new Error('gulp-concat-flatten: Streaming not supported'));
-			cb();
-			return;
-		}
+    var isUsingSourceMaps = false;
+    var latestFile;
+    var latestMod;
+    var concats = [];
 
-		// enable sourcemap support for concat
-		// if a sourcemap initialized file comes in
-		if (file.sourceMap && isUsingSourceMaps === false) {
-			isUsingSourceMaps = true;
-		}
+    /**
+     * Buffer incoming contents
+     *
+     * @param {File} file File
+     * @param enc
+     * @param {Function} cb Callback
+     */
+    function bufferContents(file, enc, cb) {
 
-		// set latest file if not already set,
-		// or if the current file was modified more recently.
-		if (!latestMod || file.stat && file.stat.mtime > latestMod) {
-			latestFile = file;
-			latestMod = file.stat && file.stat.mtime;
-		}
+        // Ignore empty files
+        if (file.isNull()) {
+            cb();
+            return;
+        }
 
-		// Extract the target file basename
-		var targetBase = (file.relative.indexOf(path.sep) > 0) ? file.relative.split(path.sep).shift() : path.basename(file.relative, path.extname(file.relative));
+        // We don't do streams (yet)
+        if (file.isStream()) {
+            this.emit('error', new Error('gulp-concat-flatten: Streaming not supported'));
+            cb();
+            return;
+        }
 
-		if (!(targetBase in concats)) {
-			concats[targetBase] = new Concat(isUsingSourceMaps, targetBase + '.' + extName, opt.newLine);
-		}
+        // Enable sourcemap support for concat if a sourcemap initialized file comes in
+        if (file.sourceMap && (isUsingSourceMaps === false)) {
+            isUsingSourceMaps = true;
+        }
 
-		// add file to concat instance
-		concats[targetBase].add(file.relative, file.contents, file.sourceMap);
-		cb();
-	}
+        // Set latest file if not already set, or if the current file was modified more recently.
+        if (!latestMod || (file.stat && (file.stat.mtime > latestMod))) {
+            latestFile = file;
+            latestMod = file.stat && file.stat.mtime;
+        }
 
-	function endStream(cb) {
+        // Extract the target file basename
+        var targetRelative = path.relative(base, file.path);
+        var targetBase = (targetRelative.indexOf(path.sep) >= 0) ?
+            (targetRelative.split(path.sep).shift() + ext) : targetRelative;
 
-		// no files passed in, no file goes out
-		if (!latestFile || (Object.keys(concats).length === 0 && concats.constructor === Object)) {
-			cb();
-			return;
-		}
+        // Register a new concat instance if necessary
+        if (!(targetBase in concats)) {
+            concats[targetBase] = {concat: new Concat(isUsingSourceMaps, targetBase, opt.newLine)};
+        }
 
-		for (var targetBase in concats) {
-			var joinedFile = new File();
-			joinedFile.contents = concats[targetBase].content;
-			if (concats[targetBase].sourceMapping) {
-				joinedFile.sourceMap = JSON.parse(concats[targetBase].sourceMap);
-			}
-			this.push(joinedFile);
-		}
-		cb();
-		return;
+        // Add file to the concat instance
+        concats[targetBase].stats = cloneStats(file.stat);
+        concats[targetBase].concat.add(file.relative, file.contents, file.sourceMap);
+        cb();
+    }
 
-		var joinedFile;
+    /**
+     * End the stream
+     *
+     * @param {Function} cb Callback
+     */
+    function endStream(cb) {
 
-		// if file opt was a file path
-		// clone everything from the latest file
-		if (typeof file === 'string') {
-			joinedFile = latestFile.clone({contents: false});
-			joinedFile.path = path.join(latestFile.base, file);
-		} else {
-			joinedFile = new File(file);
-		}
+        // If no files were passed in, no files go out ...
+        if (!latestFile || (Object.keys(concats).length === 0 && concats.constructor === Object)) {
+            cb();
+            return;
+        }
 
-		joinedFile.contents = concat.content;
+        // Run through all registered contact instances
+        for (var targetBase in concats) {
+            var joinedFile = new File({
+                path: targetBase,
+                contents: concats[targetBase].concat.content,
+                stat: concats[targetBase].stats
+            });
+            if (concats[targetBase].concat.sourceMapping) {
+                joinedFile.sourceMap = JSON.parse(concats[targetBase].concat.sourceMap);
+            }
+            this.push(joinedFile);
+        }
+        cb();
+    }
 
-		if (concat.sourceMapping) {
-			joinedFile.sourceMap = JSON.parse(concat.sourceMap);
-		}
-
-		this.push(joinedFile);
-		cb();
-	}
-
-	return through.obj(bufferContents, endStream);
+    return through.obj(bufferContents, endStream);
 };

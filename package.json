@@ -10,7 +10,9 @@
   "keywords": [
     "gulpplugin",
     "css",
-    "javascript"
+    "js",
+    "concat",
+    "concatenation"
   ],
   "dependencies": {
     "concat-with-sourcemaps": "^1.0.4",
@@ -18,8 +20,10 @@
     "vinyl": "^2.0.1"
   },
   "devDependencies": {
+    "clone-stats": "^1.0.0",
     "gulp": "^3.9.1",
     "gulp-jshint": "^2.0.4",
+    "gulp-sort": "^2.0.0",
     "gulp-sourcemaps": "^2.2.0",
     "istanbul": "^0.4.5",
     "jshint": "^2.9.4",
@@ -30,8 +34,7 @@
     "stream-assert": "^2.0.3"
   },
   "scripts": {
-    "test1": "gulp && istanbul test _mocha --report html -- test/*.js --reporter spec",
-    "test": "istanbul test _mocha --report html -- test/*.js --reporter spec",
+    "test": "gulp && istanbul test _mocha --report html -- test/*.js --reporter spec",
     "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "engines": {
