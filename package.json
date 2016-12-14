@@ -1,7 +1,7 @@
 {
   "name": "gulp-concat-flatten",
   "description": "A Gulp plugin to recursively flatten directories and concatenate the files within",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": "jkphl/gulp-concat-flatten",
   "author": "Joschi Kuphal <joschi@kuphal.net> (https://jkphl.is)",
   "files": [
@@ -16,6 +16,7 @@
   ],
   "dependencies": {
     "concat-with-sourcemaps": "^1.0.4",
+    "node-glob": "^1.2.0",
     "through2": "^2.0.3",
     "vinyl": "^2.0.1"
   },
@@ -29,7 +30,7 @@
     "jshint": "^2.9.4",
     "mocha": "^3.2.0",
     "mocha-lcov-reporter": "^1.2.0",
-    "should": "^11.1.1",
+    "should": "^11.1.2",
     "stream-array": "^1.1.2",
     "stream-assert": "^2.0.3"
   },

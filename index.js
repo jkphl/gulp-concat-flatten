@@ -6,6 +6,7 @@ var fs = require('fs');
 var File = require('vinyl');
 var Concat = require('concat-with-sourcemaps');
 var cloneStats = require('clone-stats');
+var glob = require('glob');
 
 /**
  * Concatenation by directory structure
@@ -33,13 +34,14 @@ module.exports = function (base, ext, opt) {
     }
 
     // Error if the base directory doesn't exist
-    base = path.resolve(base);
+    base = path.resolve(base) + '/';
     try {
-        if (!fs.statSync(base).isDirectory()) {
+        var baseDirs = glob.sync(base, {mark: true});
+        if (!baseDirs.length) {
             throw 'error';
         }
     } catch (e) {
-        throw new Error('gulp-concat-flatten: Base directory doesn\'t exist');
+        throw new Error('gulp-concat-flatten: No matching base directory exists');
     }
 
     ext = ('' + (ext || '')).trim();
@@ -92,7 +94,13 @@ module.exports = function (base, ext, opt) {
         }
 
         // Extract the target file basename
-        var targetRelative = path.relative(base, file.path);
+        var targetRelative;
+        for (var b = 0; b < baseDirs.length; ++b) {
+            if (file.path.indexOf(baseDirs[b]) === 0) {
+                targetRelative = path.relative(baseDirs[b], file.path);
+                break;
+            }
+        }
         var targetBase = (targetRelative.indexOf(path.sep) >= 0) ?
             (targetRelative.split(path.sep).shift() + ext) : targetRelative;
 

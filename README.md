@@ -75,6 +75,8 @@ Generally, I recommend sorting the source files via [gulp-sort](https://github.c
 concat(base, ext, opt);
 ```
 
+**NOTE** that the `base` argument also accepts a [glob pattern](https://github.com/isaacs/node-glob) to match multiple base directories. 
+
 ## Changelog
 
 Please refer to the [changelog](CHANGELOG.md) for a complete release history.

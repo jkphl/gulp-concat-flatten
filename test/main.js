@@ -25,16 +25,25 @@ describe('gulp-concat-flatten', function () {
             concat.bind(null, true).should.throw('gulp-concat-flatten: Base directory must be a directory path');
         });
 
-        it('should throw, when the base directory doesn\'t exist', function () {
-            concat.bind(null, 'invalid-directory').should.throw('gulp-concat-flatten: Base directory doesn\'t exist');
+        it('should throw, when no matching base directory exists', function () {
+            concat.bind(null, 'invalid-directory').should.throw('gulp-concat-flatten: No matching base directory exists');
         });
 
         it('should throw, when the base directory is not a directory', function () {
-            concat.bind(null, 'index.js').should.throw('gulp-concat-flatten: Base directory doesn\'t exist');
+            concat.bind(null, 'index.js').should.throw('gulp-concat-flatten: No matching base directory exists');
         });
 
         it('should ignore null files', function (done) {
             var stream = concat(fixtures(''));
+            stream
+                .pipe(assert.length(0))
+                .pipe(assert.end(done));
+            stream.write(new File());
+            stream.end();
+        });
+
+        it('should ignore null files', function (done) {
+            var stream = concat('*/fixtures/');
             stream
                 .pipe(assert.length(0))
                 .pipe(assert.end(done));
