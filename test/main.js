@@ -9,7 +9,6 @@ var File = require('vinyl');
 var gulp = require('gulp');
 var sort = require('gulp-sort');
 var sourcemaps = require('gulp-sourcemaps');
-var rename = require('gulp-rename');
 require('mocha');
 
 var fixtures = function (glob) {
