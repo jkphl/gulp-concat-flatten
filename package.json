@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "concat-with-sourcemaps": "^1.0.4",
-    "node-glob": "^1.2.0",
+    "glob": "^7.1.1",
     "through2": "^2.0.3",
     "vinyl": "^2.0.1"
   },
