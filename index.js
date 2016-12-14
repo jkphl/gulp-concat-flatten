@@ -95,14 +95,19 @@ module.exports = function (base, ext, opt) {
 
         // Extract the target file basename
         var targetRelative;
+        var targetPath;
         for (var b = 0; b < baseDirs.length; ++b) {
             if (file.path.indexOf(baseDirs[b]) === 0) {
                 targetRelative = path.relative(baseDirs[b], file.path);
+                targetPath = path.relative(file.cwd, baseDirs[b]);
                 break;
             }
         }
         var targetBase = (targetRelative.indexOf(path.sep) >= 0) ?
             (targetRelative.split(path.sep).shift() + ext) : targetRelative;
+        if (targetPath.length) {
+            targetBase = path.join(targetPath, targetBase);
+        }
 
         // Register a new concat instance if necessary
         if (!(targetBase in concats)) {

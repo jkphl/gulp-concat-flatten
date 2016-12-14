@@ -9,6 +9,7 @@ var File = require('vinyl');
 var gulp = require('gulp');
 var sort = require('gulp-sort');
 var sourcemaps = require('gulp-sourcemaps');
+var rename = require('gulp-rename');
 require('mocha');
 
 var fixtures = function (glob) {
@@ -122,7 +123,27 @@ describe('gulp-concat-flatten', function () {
                 .pipe(assert.length(1))
                 .pipe(assert.first(function (d) {
                     d.sourceMap.sources.should.have.length(3);
-                    d.sourceMap.file.should.eql('02_second.js');
+                    d.sourceMap.file.should.eql('test/fixtures/02_second.js');
+                }))
+                .pipe(assert.end(done));
+        });
+
+        it('should honor glob base directory', function (done) {
+            gulp.src('fixtures/**/*', {cwd: __dirname})
+                .pipe(sort())
+                .pipe(concat(fixtures(''), 'js'))
+                .pipe(assert.length(3))
+                .pipe(assert.first(function (d) {
+                    d.path.should.eql('fixtures/01_first.txt');
+                    d.contents.toString().should.eql('1');
+                }))
+                .pipe(assert.second(function (d) {
+                    d.path.should.eql('fixtures/02_second.js');
+                    d.contents.toString().should.eql('2.1\n\n2.2.1\n\n2.3\n');
+                }))
+                .pipe(assert.nth(3, function (d) {
+                    d.path.should.eql('fixtures/03_third.txt');
+                    d.contents.toString().should.eql('3');
                 }))
                 .pipe(assert.end(done));
         });
