@@ -130,7 +130,7 @@ module.exports = function (base, ext, opt) {
 
         if (!(targetName in dependencies)) {
             dependencies[targetName] = {};
-            let dependencyDirectory = file.dirname;
+            let dependencyDirectory = path.dirname(file.path);
             if (targetDeep) {
                 nameBaseMap[targetName] = targetBase;
                 dependencyDirectory = path.join(path.isAbsolute(file.cwd) ? file.cwd : file.base, targetName);

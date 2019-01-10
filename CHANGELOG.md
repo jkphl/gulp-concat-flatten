@@ -1,7 +1,10 @@
-## v1.1.0 Feature release
+## v1.1.1 Bugfix release (2019-01-10)
+* Fix absolute file path for dependency resolution
+ 
+## v1.1.0 Feature release (2019-01-10)
 * Add dependency support for single file resources
 
-## v1.0.0 Feature release
+## v1.0.0 Feature release (2019-01-10)
 * Add support for dependency resolution
 
 ## v0.2.1 Feature release
