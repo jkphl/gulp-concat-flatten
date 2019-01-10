@@ -58,6 +58,46 @@ In detail,
 
 Generally, I recommend sorting the source files via [gulp-sort](https://github.com/pgilad/gulp-sort) prior to piping them through `concat()`. This way you can reliably control their order for concatenation using file and directory names.
 
+### Dependencies / topological sorting
+
+As of version 1.0, you can also let `concat()` control the resource order based on dependencies: 
+
+```
+path
+`-- to
+    |-- .dependencies.json
+    `-- assets
+        |-- 01_first.txt
+        |-- 02_second
+        |   |-- .dependencies.json
+        |   |-- 01_second_first.txt
+        |   `-- 02_second_second.txt
+        `-- 03_third.txt
+```
+
+When flattening the directory `path/to/assets/02_second`, `concat()` will read `path/to/assets/02_second/.dependencies.json` and build a dependency graph based on the instructions inside that file. It will also collect and merge all  `.dependecies.json` files in parent directories. The format for `.dependencies.json` files is a follows:
+
+```json
+{
+    "*.txt": [
+        "path/to/assets/03_third.txt",
+        "path/to/another/asset",
+    ]
+}
+```
+
+The example tells `concat()` the following:
+
+> Whenever the resulting filename of the flattened `02_second` directory is going to match the glob pattern `*.txt`, then register the two dependencies `path/to/assets/03_third.txt` and `path/to/another/asset` for this resource . (The dependency `path/to/another/asset`  will be ignored as no such resource exists in the example.)
+
+Given the above file structure, `concat()` will result in the following resource order:
+
+* `path/to/assets/03_third.txt`: no dependency, but there is a dependent resources (`02_second.txt`), so this has to come before
+* `path/to/assets/02_second.txt`: concatenated folder; depends on `03_third.txt`
+* `path/to/assets/01_first.txt`:  no dependency, added at the end
+
+By binding the dependency set to a glob pattern (`*.txt`) you can express multiple sets for different result file types (e.g. CSS and JavaScript files).
+
 ## Signature
 
 ```
@@ -80,7 +120,6 @@ concat(base, ext, opt);
 ## Changelog
 
 Please refer to the [changelog](CHANGELOG.md) for a complete release history.
-
 
 ## Legal
 
