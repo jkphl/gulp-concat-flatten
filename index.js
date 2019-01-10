@@ -130,18 +130,23 @@ module.exports = function (base, ext, opt) {
 
         if (targetDeep && !(targetName in dependencies)) {
             nameBaseMap[targetName] = targetBase;
-            try {
-                dependencies[targetName] = require(path.resolve(targetName, '.dependencies.json'));
-                for (let pattern in dependencies[targetName]) {
-                    if (minimatch.match([path.basename(targetBase)], pattern).length) {
-                        dependencies[targetName][pattern].forEach((dependency) => {
-                            dependencyGraph.push([targetBase, dependency]);
-                        });
-                        break;
+            dependencies[targetName] = {};
+            let dependencyDirectory = path.resolve(file.base, path.relative(targetPath, targetName));
+            while (dependencyDirectory.length && (dependencyDirectory !== __dirname) && (dependencyDirectory !== '.')) {
+                try {
+                    dependencies[targetName] = require(path.resolve(dependencyDirectory, '.dependencies.json'));
+                    for (let pattern in dependencies[targetName]) {
+                        if (minimatch.match([path.basename(targetBase)], pattern).length) {
+                            dependencies[targetName][pattern].forEach((dependency) => {
+                                dependencyGraph.push([targetBase, dependency]);
+                            });
+                            break;
+                        }
                     }
+                } catch (e) {
+                    // Skip
                 }
-            } catch (e) {
-                dependencies[targetName] = {};
+                dependencyDirectory = path.dirname(dependencyDirectory);
             }
         }
 

@@ -14,7 +14,7 @@ module.exports = (...args) => {
         cwd: fixtures,
         base: fixtures,
         path: `${fixtures}/${fn()}`,
-        contents: new Buffer(contents),
+        contents: Buffer.from(contents),
         stat: { mode: 0o0666 },
     })));
 };

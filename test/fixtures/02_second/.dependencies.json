@@ -1,5 +1,5 @@
 {
-  "*.js": [
+  "02_second.js": [
     "test/fixtures/03_third.txt"
   ]
 }
