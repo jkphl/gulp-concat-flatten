@@ -1,12 +1,12 @@
 'use strict';
 
-var through = require('through2');
-var path = require('path');
-var fs = require('fs');
-var File = require('vinyl');
-var Concat = require('concat-with-sourcemaps');
-var cloneStats = require('clone-stats');
-var glob = require('glob');
+const through = require('through2');
+const path = require('path');
+const fs = require('fs');
+const File = require('vinyl');
+const Concat = require('concat-with-sourcemaps');
+const cloneStats = require('clone-stats');
+const glob = require('glob');
 
 /**
  * Concatenation by directory structure
@@ -34,9 +34,10 @@ module.exports = function (base, ext, opt) {
     }
 
     // Error if the base directory doesn't exist
+    let baseDirs;
     base = path.resolve(base) + '/';
     try {
-        var baseDirs = glob.sync(base, {mark: true});
+        baseDirs = glob.sync(base, { mark: true });
         if (!baseDirs.length) {
             throw 'error';
         }
@@ -55,10 +56,10 @@ module.exports = function (base, ext, opt) {
         opt.newLine = '\n';
     }
 
-    var isUsingSourceMaps = false;
-    var latestFile;
-    var latestMod;
-    var concats = [];
+    let isUsingSourceMaps = false;
+    let latestFile;
+    let latestMod;
+    const concats = [];
 
     /**
      * Buffer incoming contents
@@ -94,16 +95,16 @@ module.exports = function (base, ext, opt) {
         }
 
         // Extract the target file basename
-        var targetRelative;
-        var targetPath;
-        for (var b = 0; b < baseDirs.length; ++b) {
+        let targetRelative;
+        let targetPath;
+        for (let b = 0; b < baseDirs.length; ++b) {
             if (file.path.indexOf(baseDirs[b]) === 0) {
                 targetRelative = path.relative(baseDirs[b], file.path);
                 targetPath = path.relative(file.cwd, baseDirs[b]);
                 break;
             }
         }
-        var targetBase = (targetRelative.indexOf(path.sep) >= 0) ?
+        let targetBase = (targetRelative.indexOf(path.sep) >= 0) ?
             (targetRelative.split(path.sep).shift() + ext) : targetRelative;
         if (targetPath.length) {
             targetBase = path.join(targetPath, targetBase);
@@ -111,7 +112,7 @@ module.exports = function (base, ext, opt) {
 
         // Register a new concat instance if necessary
         if (!(targetBase in concats)) {
-            concats[targetBase] = {concat: new Concat(isUsingSourceMaps, targetBase, opt.newLine)};
+            concats[targetBase] = { concat: new Concat(isUsingSourceMaps, targetBase, opt.newLine) };
         }
 
         // Add file to the concat instance
@@ -134,8 +135,8 @@ module.exports = function (base, ext, opt) {
         }
 
         // Run through all registered contact instances
-        for (var targetBase in concats) {
-            var joinedFile = new File({
+        for (const targetBase in concats) {
+            const joinedFile = new File({
                 path: targetBase,
                 contents: concats[targetBase].concat.content,
                 stat: concats[targetBase].stats

@@ -10,14 +10,15 @@
  * @license MIT https://raw.github.com/jkphl/gulp-concat-flatten/master/LICENSE
  */
 
-var gulp    	= require('gulp'),
-jshint			= require('gulp-jshint');
+const gulp = require('gulp');
+const jshint = require('gulp-jshint');
 
-gulp.task('lint', function () {
+gulp.task('lint', function (done) {
     gulp.src(['test/*.js', 'index.js'])
         .pipe(jshint('.jshintrc'))
         .pipe(jshint.reporter('default'))
         .pipe(jshint.reporter('fail'))
+    done();
 });
 
-gulp.task('default', ['lint']);
+gulp.task('default', gulp.series('lint'));
