@@ -1,3 +1,6 @@
+## v1.0.0 Feature release
+* Added support for dependency resolution (undocumented)
+
 ## v0.2.1 Feature release
 * Added support for source base directory
 

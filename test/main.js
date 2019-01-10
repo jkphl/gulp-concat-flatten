@@ -75,16 +75,16 @@ describe('gulp-concat-flatten', () => {
                 .pipe(concat(fixtures(''), 'js'))
                 .pipe(assert.length(3))
                 .pipe(assert.first((d) => {
-                    d.basename.should.eql('01_first.txt');
-                    d.contents.toString().should.eql('1');
+                    d.basename.should.eql('03_third.txt');
+                    d.contents.toString().should.eql('3');
                 }))
                 .pipe(assert.second((d) => {
                     d.basename.should.eql('02_second.js');
                     d.contents.toString().should.eql('2.1\n\n2.2.1\n\n2.3\n');
                 }))
                 .pipe(assert.nth(3, (d) => {
-                    d.basename.should.eql('03_third.txt');
-                    d.contents.toString().should.eql('3');
+                    d.basename.should.eql('01_first.txt');
+                    d.contents.toString().should.eql('1');
                 }))
                 .pipe(assert.end(done));
         });

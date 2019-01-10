@@ -7,6 +7,8 @@ const File = require('vinyl');
 const Concat = require('concat-with-sourcemaps');
 const cloneStats = require('clone-stats');
 const glob = require('glob');
+const minimatch = require('minimatch');
+const toposort = require('toposort');
 
 /**
  * Concatenation by directory structure
@@ -60,6 +62,9 @@ module.exports = function (base, ext, opt) {
     let latestFile;
     let latestMod;
     const concats = [];
+    const dependencies = {};
+    const nameBaseMap = {};
+    let dependencyGraph = [];
 
     /**
      * Buffer incoming contents
@@ -70,8 +75,8 @@ module.exports = function (base, ext, opt) {
      */
     function bufferContents(file, enc, cb) {
 
-        // Ignore empty files
-        if (file.isNull()) {
+        // Ignore empty files & dependency descriptors
+        if (file.isNull() || (file.basename === '.dependencies.json')) {
             cb();
             return;
         }
@@ -97,6 +102,9 @@ module.exports = function (base, ext, opt) {
         // Extract the target file basename
         let targetRelative;
         let targetPath;
+        let targetBase;
+        let targetDeep = false;
+        let targetExt;
         for (let b = 0; b < baseDirs.length; ++b) {
             if (file.path.indexOf(baseDirs[b]) === 0) {
                 targetRelative = path.relative(baseDirs[b], file.path);
@@ -104,10 +112,37 @@ module.exports = function (base, ext, opt) {
                 break;
             }
         }
-        let targetBase = (targetRelative.indexOf(path.sep) >= 0) ?
-            (targetRelative.split(path.sep).shift() + ext) : targetRelative;
+        if (targetRelative.indexOf(path.sep) >= 0) {
+            targetBase = targetRelative.split(path.sep).shift() + ext;
+            targetExt = ext;
+            targetDeep = true;
+        } else {
+            targetBase = targetRelative;
+            targetExt = path.extname(targetBase);
+        }
         if (targetPath.length) {
             targetBase = path.join(targetPath, targetBase);
+        }
+
+        // Create a resource "name" (without file extension)
+        const targetName = path.join(path.dirname(targetBase), path.basename(targetBase, targetExt));
+        nameBaseMap[targetBase] = targetBase;
+
+        if (targetDeep && !(targetName in dependencies)) {
+            nameBaseMap[targetName] = targetBase;
+            try {
+                dependencies[targetName] = require(path.resolve(targetName, '.dependencies.json'));
+                for (let pattern in dependencies[targetName]) {
+                    if (minimatch.match([path.basename(targetBase)], pattern).length) {
+                        dependencies[targetName][pattern].forEach((dependency) => {
+                            dependencyGraph.push([targetBase, dependency]);
+                        });
+                        break;
+                    }
+                }
+            } catch (e) {
+                dependencies[targetName] = {};
+            }
         }
 
         // Register a new concat instance if necessary
@@ -127,24 +162,39 @@ module.exports = function (base, ext, opt) {
      * @param {Function} cb Callback
      */
     function endStream(cb) {
-
         // If no files were passed in, no files go out ...
         if (!latestFile || (Object.keys(concats).length === 0 && concats.constructor === Object)) {
             cb();
             return;
         }
 
-        // Run through all registered contact instances
-        for (const targetBase in concats) {
+        // Prepare a method for pushing the stream
+        const pushJoinedFile = (joinedBase) => {
             const joinedFile = new File({
-                path: targetBase,
-                contents: concats[targetBase].concat.content,
-                stat: concats[targetBase].stats
+                path: joinedBase,
+                contents: concats[joinedBase].concat.content,
+                stat: concats[joinedBase].stats
             });
-            if (concats[targetBase].concat.sourceMapping) {
-                joinedFile.sourceMap = JSON.parse(concats[targetBase].concat.sourceMap);
+            if (concats[joinedBase].concat.sourceMapping) {
+                joinedFile.sourceMap = JSON.parse(concats[joinedBase].concat.sourceMap);
             }
             this.push(joinedFile);
+            delete concats[joinedBase];
+        };
+
+        // Refine the dependency graph
+        const refinedDependencyMap = [];
+        dependencyGraph.forEach(edge => {
+            if ((edge[0] in nameBaseMap) && (edge[1] in nameBaseMap)) {
+                refinedDependencyMap.push([nameBaseMap[edge[0]], nameBaseMap[edge[1]]]);
+            }
+        });
+        const sortedDependencies = refinedDependencyMap.length ? toposort(refinedDependencyMap).reverse() : [];
+        sortedDependencies.map(pushJoinedFile);
+
+        // Run through all registered contact instances
+        for (const targetBase in concats) {
+            pushJoinedFile(targetBase);
         }
         cb();
     }

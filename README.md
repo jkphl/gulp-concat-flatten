@@ -84,7 +84,7 @@ Please refer to the [changelog](CHANGELOG.md) for a complete release history.
 
 ## Legal
 
-Copyright © 2016 Joschi Kuphal <joschi@kuphal.net> / [@jkphl](https://twitter.com/jkphl).
+Copyright © 2019 Joschi Kuphal <joschi@kuphal.net> / [@jkphl](https://twitter.com/jkphl).
 
 *gulp-concat-flatten* is licensed under the terms of the [MIT license](LICENSE).
 
