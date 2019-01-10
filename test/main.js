@@ -1,14 +1,14 @@
 /* eslint no-unused-vars: "off" */
 /* global describe it */
-const concat = require('../');
 const should = require('should');
 const path = require('path');
 const assert = require('stream-assert');
-const test = require('./test-stream');
 const File = require('vinyl');
 const gulp = require('gulp');
 const sort = require('gulp-sort');
 const sourcemaps = require('gulp-sourcemaps');
+const test = require('./test-stream');
+const concat = require('../');
 require('mocha');
 
 const fixtures = glob => path.join(__dirname, 'fixtures', glob);
