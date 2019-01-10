@@ -128,10 +128,13 @@ module.exports = function (base, ext, opt) {
         const targetName = path.join(path.dirname(targetBase), path.basename(targetBase, targetExt));
         nameBaseMap[targetBase] = targetBase;
 
-        if (targetDeep && !(targetName in dependencies)) {
-            nameBaseMap[targetName] = targetBase;
+        if (!(targetName in dependencies)) {
             dependencies[targetName] = {};
-            let dependencyDirectory = path.join(path.isAbsolute(file.cwd) ? file.cwd : file.base, targetName);
+            let dependencyDirectory = file.dirname;
+            if (targetDeep) {
+                nameBaseMap[targetName] = targetBase;
+                dependencyDirectory = path.join(path.isAbsolute(file.cwd) ? file.cwd : file.base, targetName);
+            }
             while (dependencyDirectory.length && (dependencyDirectory !== process.cwd())) {
                 try {
                     dependencies[targetName] = require(path.resolve(dependencyDirectory, '.dependencies.json'));

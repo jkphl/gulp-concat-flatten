@@ -1,4 +1,7 @@
 {
+  "*.txt": [
+    "test/fixtures/invalid.dep"
+  ],
   "*.js": [
     "test/fixtures/invalid.dep"
   ]
