@@ -12,7 +12,11 @@
     "css",
     "js",
     "concat",
-    "concatenation"
+    "concatenation",
+    "flatten",
+    "dependencies",
+    "dependency",
+    "toposort"
   ],
   "dependencies": {
     "concat-with-sourcemaps": "^1.1.0",
