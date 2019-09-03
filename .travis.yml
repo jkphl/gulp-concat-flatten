@@ -16,10 +16,10 @@ cache:
 install: npm install
 
 after_script:
- - npm run coveralls
+  - npm run coveralls
 
 after_failure:
- - tar -cjf "gulp-concat-flatten_travis_${TRAVIS_BUILD_NUMBER}.tar.bz2" tmp && curl --ftp-create-dirs -T "gulp-concat-flatten_travis_${TRAVIS_BUILD_NUMBER}.tar.bz2" -u $FTP_USER:$FTP_PASSWORD "ftp://jkphl.is/${TRAVIS_REPO_SLUG}/gulp-concat-flatten_travis_${TRAVIS_BUILD_NUMBER}.tar.bz2"
+  - tar -cjf "gulp-concat-flatten_travis_${TRAVIS_BUILD_NUMBER}.tar.bz2" tmp && curl --ftp-create-dirs -T "gulp-concat-flatten_travis_${TRAVIS_BUILD_NUMBER}.tar.bz2" -u $FTP_USER:$FTP_PASSWORD "ftp://jkphl.is/${TRAVIS_REPO_SLUG}/gulp-concat-flatten_travis_${TRAVIS_BUILD_NUMBER}.tar.bz2"
 
 matrix:
   fast_finish: true
