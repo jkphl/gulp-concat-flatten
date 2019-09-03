@@ -1,6 +1,5 @@
 /* eslint no-unused-vars: "off" */
 /* global describe it */
-const should = require('should');
 const path = require('path');
 const assert = require('stream-assert');
 const File = require('vinyl');
@@ -10,6 +9,7 @@ const sourcemaps = require('gulp-sourcemaps');
 const test = require('./test-stream');
 const concat = require('../');
 require('mocha');
+require('should');
 
 const fixtures = glob => path.join(__dirname, 'fixtures', glob);
 
@@ -20,15 +20,21 @@ describe('gulp-concat-flatten', () => {
         });
 
         it('should throw, when base directory is not a path', () => {
-            concat.bind(null, true).should.throw('gulp-concat-flatten: Base directory must be a directory path');
+            concat.bind(null, true)
+                .should
+                .throw('gulp-concat-flatten: Base directory must be a directory path');
         });
 
         it('should throw, when no matching base directory exists', () => {
-            concat.bind(null, 'invalid-directory').should.throw('gulp-concat-flatten: No matching base directory exists');
+            concat.bind(null, 'invalid-directory')
+                .should
+                .throw('gulp-concat-flatten: No matching base directory exists');
         });
 
         it('should throw, when the base directory is not a directory', () => {
-            concat.bind(null, 'index.js').should.throw('gulp-concat-flatten: No matching base directory exists');
+            concat.bind(null, 'index.js')
+                .should
+                .throw('gulp-concat-flatten: No matching base directory exists');
         });
 
         it('should ignore null files', (done) => {
@@ -76,7 +82,7 @@ describe('gulp-concat-flatten', () => {
                 .pipe(assert.length(3))
                 .pipe(assert.first((d) => {
                     d.basename.should.eql('03_third.txt');
-                    d.contents.toString().should.eql('3');
+                    d.contents.toString().should.eql('3\n');
                 }))
                 .pipe(assert.second((d) => {
                     d.basename.should.eql('02_second.js');
@@ -84,7 +90,7 @@ describe('gulp-concat-flatten', () => {
                 }))
                 .pipe(assert.nth(3, (d) => {
                     d.basename.should.eql('01_first.txt');
-                    d.contents.toString().should.eql('1');
+                    d.contents.toString().should.eql('1\n');
                 }))
                 .pipe(assert.end(done));
         });
@@ -129,16 +135,16 @@ describe('gulp-concat-flatten', () => {
                 .pipe(concat(fixtures(''), 'js'))
                 .pipe(assert.length(3))
                 .pipe(assert.first((d) => {
-                    d.path.should.eql('fixtures/01_first.txt');
-                    d.contents.toString().should.eql('1');
+                    d.path.should.eql(path.join('fixtures/01_first.txt'));
+                    d.contents.toString().should.eql('1\n');
                 }))
                 .pipe(assert.second((d) => {
-                    d.path.should.eql('fixtures/02_second.js');
+                    d.path.should.eql(path.join('fixtures/02_second.js'));
                     d.contents.toString().should.eql('2.1\n\n2.2.1\n\n2.3\n');
                 }))
                 .pipe(assert.nth(3, (d) => {
-                    d.path.should.eql('fixtures/03_third.txt');
-                    d.contents.toString().should.eql('3');
+                    d.path.should.eql(path.join('fixtures/03_third.txt'));
+                    d.contents.toString().should.eql('3\n');
                 }))
                 .pipe(assert.end(done));
         });

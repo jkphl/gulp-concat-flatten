@@ -1,8 +1,5 @@
-'use strict';
-
 const through = require('through2');
 const path = require('path');
-const fs = require('fs');
 const File = require('vinyl');
 const Concat = require('concat-with-sourcemaps');
 const cloneStats = require('clone-stats');
@@ -13,18 +10,18 @@ const toposort = require('toposort');
 /**
  * Concatenation by directory structure
  *
- * The method will concatenate files based on their position in the file system. It does only process files that are
- * stored in or below the given base directory (positions beyond will be ignored). Files directly stored in the base
- * directory will just be copied to the destination. Files in subdirectories will be concatenated to resources named
- * after the first-level subdirectory (with an optional file extension).
+ * The method will concatenate files based on their position in the file system. It does only
+ * process files that are stored in or below the given base directory (positions beyond will be
+ * ignored). Files directly stored in the base directory will just be copied to the destination.
+ * Files in subdirectories will be concatenated to resources named after the first-level
+ * subdirectory (with an optional file extension).
  *
  * @param {String} base Base directory
  * @param {String} ext File extension
  * @param {Object} opt Options
  * @returns {*}
  */
-module.exports = function (base, ext, opt) {
-
+module.exports = function concatFlatten(base, ext, opt) {
     // Error if the base directory is missing
     if (!base) {
         throw new Error('gulp-concat-flatten: Missing base directory');
@@ -37,25 +34,25 @@ module.exports = function (base, ext, opt) {
 
     // Error if the base directory doesn't exist
     let baseDirs;
-    base = path.resolve(base) + '/';
+    const absBase = `${path.resolve(base)}/`;
     try {
-        baseDirs = glob.sync(base, { mark: true });
-        if (!baseDirs.length) {
-            throw 'error';
-        }
+        baseDirs = glob.sync(absBase, { mark: true }).map(d => path.resolve(d));
     } catch (e) {
         throw new Error('gulp-concat-flatten: No matching base directory exists');
     }
-
-    ext = ('' + (ext || '')).trim();
-    if (ext.length && (ext.substr(0, 1) !== '.')) {
-        ext = '.' + ext;
+    if (!baseDirs.length) {
+        throw new Error('gulp-concat-flatten: No matching base directory exists');
     }
-    opt = opt || {};
+
+    let absExt = (`${ext || ''}`).trim();
+    if (absExt.length && (absExt.substr(0, 1) !== '.')) {
+        absExt = `.${absExt}`;
+    }
+    const absOpt = opt || {};
 
     // to preserve existing |undefined| behaviour and to introduce |newLine: ""| for binaries
-    if (typeof opt.newLine !== 'string') {
-        opt.newLine = '\n';
+    if (typeof absOpt.newLine !== 'string') {
+        absOpt.newLine = '\n';
     }
 
     let isUsingSourceMaps = false;
@@ -64,7 +61,7 @@ module.exports = function (base, ext, opt) {
     const concats = [];
     const dependencies = {};
     const nameBaseMap = {};
-    let dependencyGraph = [];
+    const dependencyGraph = [];
 
     /**
      * Buffer incoming contents
@@ -74,7 +71,6 @@ module.exports = function (base, ext, opt) {
      * @param {Function} cb Callback
      */
     function bufferContents(file, enc, cb) {
-
         // Ignore empty files & dependency descriptors
         if (file.isNull() || (file.basename === '.dependencies.json')) {
             cb();
@@ -113,8 +109,8 @@ module.exports = function (base, ext, opt) {
             }
         }
         if (targetRelative.indexOf(path.sep) >= 0) {
-            targetBase = targetRelative.split(path.sep).shift() + ext;
-            targetExt = ext;
+            targetBase = targetRelative.split(path.sep).shift() + absExt;
+            targetExt = absExt;
             targetDeep = true;
         } else {
             targetBase = targetRelative;
@@ -125,7 +121,8 @@ module.exports = function (base, ext, opt) {
         }
 
         // Create a resource "name" (without file extension)
-        const targetName = path.join(path.dirname(targetBase), path.basename(targetBase, targetExt));
+        const targetName = path.join(path.dirname(targetBase),
+            path.basename(targetBase, targetExt));
         nameBaseMap[targetBase] = targetBase;
 
         if (!(targetName in dependencies)) {
@@ -137,11 +134,12 @@ module.exports = function (base, ext, opt) {
             }
             while (dependencyDirectory.length && (dependencyDirectory !== process.cwd())) {
                 try {
-                    dependencies[targetName] = require(path.resolve(dependencyDirectory, '.dependencies.json'));
-                    for (let pattern in dependencies[targetName]) {
+                    const deps = path.resolve(dependencyDirectory, '.dependencies.json');
+                    dependencies[targetName] = require(deps);
+                    for (const pattern in dependencies[targetName]) {
                         if (minimatch.match([path.basename(targetBase)], pattern).length) {
                             dependencies[targetName][pattern].forEach((dependency) => {
-                                dependencyGraph.push([targetBase, dependency]);
+                                dependencyGraph.push([targetBase, path.join(dependency)]);
                             });
                             break;
                         }
@@ -158,7 +156,7 @@ module.exports = function (base, ext, opt) {
 
         // Register a new concat instance if necessary
         if (!(targetBase in concats)) {
-            concats[targetBase] = { concat: new Concat(isUsingSourceMaps, targetBase, opt.newLine) };
+            concats[targetBase] = { concat: new Concat(isUsingSourceMaps, targetBase, absOpt.newLine) };
         }
 
         // Add file to the concat instance
@@ -174,7 +172,8 @@ module.exports = function (base, ext, opt) {
      */
     function endStream(cb) {
         // If no files were passed in, no files go out ...
-        if (!latestFile || (Object.keys(concats).length === 0 && concats.constructor === Object)) {
+        if (!latestFile
+            || (Object.keys(concats).length === 0 && concats.constructor === Object)) {
             cb();
             return;
         }
@@ -184,7 +183,7 @@ module.exports = function (base, ext, opt) {
             const joinedFile = new File({
                 path: joinedBase,
                 contents: concats[joinedBase].concat.content,
-                stat: concats[joinedBase].stats
+                stat: concats[joinedBase].stats,
             });
             if (concats[joinedBase].concat.sourceMapping) {
                 joinedFile.sourceMap = JSON.parse(concats[joinedBase].concat.sourceMap);
@@ -195,17 +194,21 @@ module.exports = function (base, ext, opt) {
 
         // Refine the dependency graph
         const refinedDependencyMap = [];
-        dependencyGraph.forEach(edge => {
+        dependencyGraph.forEach((edge) => {
             if ((edge[0] in nameBaseMap) && (edge[1] in nameBaseMap)) {
                 refinedDependencyMap.push([nameBaseMap[edge[0]], nameBaseMap[edge[1]]]);
             }
         });
-        const sortedDependencies = refinedDependencyMap.length ? toposort(refinedDependencyMap).reverse() : [];
+        const sortedDependencies = refinedDependencyMap.length
+            ? toposort(refinedDependencyMap).reverse()
+            : [];
         sortedDependencies.map(pushJoinedFile);
 
         // Run through all registered contact instances
         for (const targetBase in concats) {
-            pushJoinedFile(targetBase);
+            if (Object.prototype.hasOwnProperty.call(concats, targetBase)) {
+                pushJoinedFile(targetBase);
+            }
         }
         cb();
     }

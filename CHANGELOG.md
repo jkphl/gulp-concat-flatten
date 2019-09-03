@@ -1,3 +1,8 @@
+## v2.0.0 Maintenance release (2019-09-03)
+* Update dependencies
+* Make Windows compatible
+* Code style improvements
+
 ## v1.1.1 Bugfix release (2019-01-10)
 * Fix absolute file path for dependency resolution
  
