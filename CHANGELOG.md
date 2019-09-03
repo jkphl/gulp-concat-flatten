@@ -1,3 +1,6 @@
+## v2.0.1 Maintenance release (2019-09-03)
+* Update dependencies
+
 ## v2.0.0 Maintenance release (2019-09-03)
 * Update dependencies
 * Make Windows compatible

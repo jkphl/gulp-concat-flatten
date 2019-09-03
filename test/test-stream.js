@@ -10,7 +10,7 @@ module.exports = (...args) => {
         fn = args.shift();
     }
     const fixtures = path.join(__dirname, 'fixtures');
-    return array(args.map(contents => new File({
+    return array(args.map((contents) => new File({
         cwd: fixtures,
         base: fixtures,
         path: `${fixtures}/${fn()}`,

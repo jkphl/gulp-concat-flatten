@@ -11,7 +11,7 @@ const concat = require('../');
 require('mocha');
 require('should');
 
-const fixtures = glob => path.join(__dirname, 'fixtures', glob);
+const fixtures = (glob) => path.join(__dirname, 'fixtures', glob);
 
 describe('gulp-concat-flatten', () => {
     describe('concat()', () => {

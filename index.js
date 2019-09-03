@@ -36,7 +36,7 @@ module.exports = function concatFlatten(base, ext, opt) {
     let baseDirs;
     const absBase = `${path.resolve(base)}/`;
     try {
-        baseDirs = glob.sync(absBase, { mark: true }).map(d => path.resolve(d));
+        baseDirs = glob.sync(absBase, { mark: true }).map((d) => path.resolve(d));
     } catch (e) {
         throw new Error('gulp-concat-flatten: No matching base directory exists');
     }
