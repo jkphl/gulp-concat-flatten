@@ -1,5 +1,6 @@
-## v2.0.1 Maintenance release (2019-09-03)
+## v3.0.0 Maintenance release (2019-09-03)
 * Update dependencies
+* Drop support for Node < 8.0
 
 ## v2.0.0 Maintenance release (2019-09-03)
 * Update dependencies
