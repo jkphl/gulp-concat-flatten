@@ -21,7 +21,7 @@ const sort      = require('gulp-sort');
 
 gulp.src('path/**/*.txt')
 	.pipe(sort()) // Recommendation, see below
-	.concat('path/to/assets', 'txt', {'newLine': '\n'})
+	.pipe(concat('path/to/assets', 'txt', {'newLine': '\n'}))
 	.pipe(gulp.dest('out'));
 ```
 
