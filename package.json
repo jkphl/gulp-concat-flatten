@@ -21,7 +21,7 @@
   "dependencies": {
     "clone-stats": "^1.0.0",
     "concat-with-sourcemaps": "^1.1.0",
-    "glob": "^7.1.4",
+    "glob": "^7.1.6",
     "minimatch": "^3.0.4",
     "through2": "^3.0.1",
     "toposort": "^2.0.2",
@@ -33,16 +33,17 @@
     "gulp-sort": "^2.0.0",
     "gulp-sourcemaps": "^2.6.5",
     "istanbul": "^0.4.5",
-    "mocha": "^6.2.0",
+    "mocha": "^7.1.1",
     "mocha-lcov-reporter": "^1.3.0",
     "should": "^13.2.3",
     "stream-array": "^1.1.2",
     "stream-assert": "^2.0.3",
-    "eslint": "^6.3.0",
-    "eslint-config-airbnb": "^18.0.1",
-    "eslint-plugin-import": "^2.18.2",
+    "es-abstract": "^1.14.2",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-jsx-a11y": "6.2.3",
-    "eslint-plugin-react": "^7.14.3"
+    "eslint-plugin-react": "^7.19.0"
   },
   "scripts": {
     "test": "eslint **/*.js && istanbul test ./node_modules/mocha/bin/_mocha --report html -- test/*.js --reporter spec",

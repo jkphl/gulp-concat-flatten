@@ -7,7 +7,7 @@ const gulp = require('gulp');
 const sort = require('gulp-sort');
 const sourcemaps = require('gulp-sourcemaps');
 const test = require('./test-stream');
-const concat = require('../');
+const concat = require('..');
 require('mocha');
 require('should');
 

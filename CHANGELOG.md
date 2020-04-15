@@ -1,3 +1,7 @@
+## v3.0.1 Maintenance release (2020-04-15)
+* Update dependencies
+* Fix base path matching by adding trailing path separator
+
 ## v3.0.0 Maintenance release (2019-09-03)
 * Update dependencies
 * Drop support for Node < 8.0
